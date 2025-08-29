@@ -12,7 +12,7 @@ export const register = async (req, res) => {
 export const login = async (req, res) => {
   try {
     const { user, token } = await AuthService.loginUser(req.body);
-    res.status(200).cookie("token", token, { httpOnly: true }).send({ user });
+    res.status(200).send({ user, token });
   } catch (error) {
     res.status(400).send(error);
   }
