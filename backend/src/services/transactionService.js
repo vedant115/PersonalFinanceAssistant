@@ -11,17 +11,61 @@ export const createTransaction = async (data, userId) => {
   return transaction;
 };
 
-export const getTransactionsByUser = async (userId, page = 1, limit = 10) => {
-  const transactions = await prisma.transaction.findMany({
-    where: { userId },
-    orderBy: { createdAt: "desc" },
-    skip: (page - 1) * limit,
-    take: limit,
-  });
+export const getTransactionsByUser = async (userId, query) => {
+  try {
+    const {
+      page = 1,
+      limit = 10,
+      type,
+      category,
+      startDate,
+      endDate,
+      sortBy,
+      sortOrder,
+      search,
+    } = query;
 
-  const total = await prisma.transaction.count({ where: { userId } });
+    const pageNum = Number(page) || 1;
+    const limitNum = Number(limit) || 10;
 
-  return { transactions, total };
+    const where = { userId };
+
+    if (type) where.type = type;
+    if (category) where.category = category;
+    if (startDate && endDate) {
+      where.date = {
+        gte: new Date(startDate),
+        lte: new Date(endDate),
+      };
+    }
+    if (search) {
+      where.description = {
+        contains: search,
+        mode: "insensitive",
+      };
+    }
+    const orderBy = {};
+    const allowedSortFields = ["date", "amount", "createdAt", "updatedAt"];
+    if (sortBy && allowedSortFields.includes(sortBy)) {
+      orderBy[sortBy] = sortOrder || "desc";
+    } else {
+      orderBy.date = "desc";
+    }
+
+    const transactions = await prisma.transaction.findMany({
+      where,
+      orderBy,
+      skip: (pageNum - 1) * limitNum,
+      take: limitNum,
+    });
+
+    const total = await prisma.transaction.count({ where });
+
+    return { transactions, total };
+  } catch (error) {
+    console.error(error);
+    throw error;
+  }
 };
 
 export const getTransactionById = async (id, userId) => {

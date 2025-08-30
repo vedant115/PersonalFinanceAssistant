@@ -1,5 +1,6 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useMemo } from "react";
 import apiService from "../services/apiService";
+import { useDebounce } from "../hooks/useDebounce";
 
 const TransactionList = () => {
   const [transactions, setTransactions] = useState([]);
@@ -7,20 +8,63 @@ const TransactionList = () => {
   const [error, setError] = useState("");
   const [page, setPage] = useState(1);
   const limit = 10;
-  // const [limit, setLimit] = useState(10);
-  //const [totalPages, setTotalPages] = useState(1);
   const [totalTransactions, setTotalTransactions] = useState(0);
-  // TODO: Add state and handlers for filters (date range, type, etc.)
+
+  const [filters, setFilters] = useState({
+    search: "",
+    type: "",
+    category: "",
+    startDate: "",
+    endDate: "",
+  });
+
+  const [sort, setSort] = useState({ sortBy: "date", sortOrder: "desc" });
+
+  const debouncedSearchTerm = useDebounce(filters.search, 500);
+
+  const categories = useMemo(
+    () => [
+      "RENT",
+      "SHOPPING",
+      "FOOD",
+      "ENTERTAINMENT",
+      "HEALTH",
+      "GROCERIES",
+      "TRAVEL",
+      "MISC",
+      "SALARY",
+      "FREELANCE",
+      "INVESTMENT",
+      "BONUS",
+      "GIFT",
+      "OTHER_INCOME",
+    ],
+    []
+  );
 
   useEffect(() => {
     const fetchTransactions = async () => {
       try {
         setLoading(true);
+
+        const params = new URLSearchParams({
+          page,
+          limit,
+          sortBy: sort.sortBy,
+          sortOrder: sort.sortOrder,
+        });
+
+        if (debouncedSearchTerm) params.append("search", debouncedSearchTerm);
+        if (filters.type) params.append("type", filters.type);
+        if (filters.category) params.append("category", filters.category);
+        if (filters.startDate) params.append("startDate", filters.startDate);
+        if (filters.endDate) params.append("endDate", filters.endDate);
+
         const response = await apiService.get(
-          `/transactions?page=${page}&limit=${limit}`
+          `/transactions?${params.toString()}`
         );
+        console.log(response.data);
         setTransactions(response.data.transactions);
-        // setTotalPages(Math.ceil(response.data.total / limit));
         setTotalTransactions(response.data.total);
       } catch (err) {
         setError("Failed to fetch transactions.");
@@ -31,7 +75,27 @@ const TransactionList = () => {
     };
 
     fetchTransactions();
-  }, [page]);
+  }, [
+    page,
+    debouncedSearchTerm,
+    filters.type,
+    filters.category,
+    filters.startDate,
+    filters.endDate,
+    sort,
+  ]);
+
+  const handleFilterChange = (e) => {
+    const { name, value } = e.target;
+    setFilters((prev) => ({ ...prev, [name]: value }));
+    setPage(1);
+  };
+
+  const handleSortChange = (e) => {
+    const [sortBy, sortOrder] = e.target.value.split("_");
+    setSort({ sortBy, sortOrder });
+    setPage(1);
+  };
 
   const handlePreviousPage = () => {
     setPage((prev) => Math.max(prev - 1, 1));
@@ -41,13 +105,73 @@ const TransactionList = () => {
     setPage((prev) => Math.min(prev + 1, Math.ceil(totalTransactions / limit)));
   };
 
-  if (loading) return <p>Loading transactions...</p>;
-  if (error) return <p className="text-red-500">{error}</p>;
-
   return (
     <div className="bg-white p-8 rounded-lg shadow-md">
-      {/* TODO: Add filter UI controls here */}
+      {loading && (
+        <div className="mb-4 text-sm text-gray-600">Loading transactions…</div>
+      )}
+      {error && <div className="mb-4 text-red-500">{error}</div>}
 
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-4 mb-6">
+        <input
+          type="text"
+          name="search"
+          placeholder="Search descriptions..."
+          value={filters.search}
+          onChange={handleFilterChange}
+          className="p-2 border rounded-md"
+        />
+        <input
+          type="date"
+          name="startDate"
+          value={filters.startDate}
+          onChange={handleFilterChange}
+          className="p-2 border rounded-md"
+        />
+        <input
+          type="date"
+          name="endDate"
+          value={filters.endDate}
+          onChange={handleFilterChange}
+          className="p-2 border rounded-md"
+        />
+        <select
+          name="type"
+          value={filters.type}
+          onChange={handleFilterChange}
+          className="p-2 border rounded-md"
+        >
+          <option value="">All Types</option>
+          <option value="INCOME">Income</option>
+          <option value="EXPENSE">Expense</option>
+        </select>
+        <select
+          name="category"
+          value={filters.category}
+          onChange={handleFilterChange}
+          className="p-2 border rounded-md"
+        >
+          <option value="">All Categories</option>
+          {categories.map((cat) => (
+            <option key={cat} value={cat}>
+              {cat}
+            </option>
+          ))}
+        </select>
+      </div>
+
+      <div className="flex justify-end mb-4">
+        <select
+          onChange={handleSortChange}
+          value={`${sort.sortBy}_${sort.sortOrder}`}
+          className="p-2 border rounded-md"
+        >
+          <option value="date_desc">Date (Newest)</option>
+          <option value="date_asc">Date (Oldest)</option>
+          <option value="amount_desc">Amount (Highest)</option>
+          <option value="amount_asc">Amount (Lowest)</option>
+        </select>
+      </div>
       <div className="overflow-x-auto">
         <table className="min-w-full divide-y divide-gray-200">
           <thead className="bg-gray-50">

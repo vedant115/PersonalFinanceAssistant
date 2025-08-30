@@ -10,21 +10,20 @@ export const create = async (req, res) => {
 
     res.status(201).send(transaction);
   } catch (error) {
-    res.status(500).send(error); // check status code
+    res.status(500).send(error);
   }
 };
 
 export const getAll = async (req, res) => {
   try {
-    const { page = 1, limit = 10 } = req.query;
     const data = await transactionService.getTransactionsByUser(
       req.user.id,
-      parseInt(page),
-      parseInt(limit)
+      req.query
     );
     res.status(200).send(data);
   } catch (error) {
-    res.status(500).send(error);
+    console.error(error);
+    res.status(500).send({ error: error.message || "Internal Server Error" });
   }
 };
 
