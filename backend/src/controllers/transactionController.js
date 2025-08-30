@@ -16,10 +16,13 @@ export const create = async (req, res) => {
 
 export const getAll = async (req, res) => {
   try {
-    const transactions = await transactionService.getTransactionsByUser(
-      req.user.id
+    const { page = 1, limit = 10 } = req.query;
+    const data = await transactionService.getTransactionsByUser(
+      req.user.id,
+      parseInt(page),
+      parseInt(limit)
     );
-    res.status(200).send(transactions);
+    res.status(200).send(data);
   } catch (error) {
     res.status(500).send(error);
   }

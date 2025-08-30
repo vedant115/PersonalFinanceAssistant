@@ -5,16 +5,23 @@ const TransactionList = () => {
   const [transactions, setTransactions] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
-
+  const [page, setPage] = useState(1);
+  const limit = 10;
+  // const [limit, setLimit] = useState(10);
+  //const [totalPages, setTotalPages] = useState(1);
+  const [totalTransactions, setTotalTransactions] = useState(0);
   // TODO: Add state and handlers for filters (date range, type, etc.)
 
   useEffect(() => {
     const fetchTransactions = async () => {
       try {
         setLoading(true);
-        // TODO: Pass filter state to the API call as query params
-        const response = await apiService.get("/transactions");
-        setTransactions(response.data);
+        const response = await apiService.get(
+          `/transactions?page=${page}&limit=${limit}`
+        );
+        setTransactions(response.data.transactions);
+        // setTotalPages(Math.ceil(response.data.total / limit));
+        setTotalTransactions(response.data.total);
       } catch (err) {
         setError("Failed to fetch transactions.");
         console.error(err);
@@ -24,7 +31,15 @@ const TransactionList = () => {
     };
 
     fetchTransactions();
-  }, []); // TODO: Add filter state to dependency array
+  }, [page]);
+
+  const handlePreviousPage = () => {
+    setPage((prev) => Math.max(prev - 1, 1));
+  };
+
+  const handleNextPage = () => {
+    setPage((prev) => Math.min(prev + 1, Math.ceil(totalTransactions / limit)));
+  };
 
   if (loading) return <p>Loading transactions...</p>;
   if (error) return <p className="text-red-500">{error}</p>;
@@ -96,6 +111,26 @@ const TransactionList = () => {
             )}
           </tbody>
         </table>
+      </div>
+      <div className="mt-4 flex justify-between items-center">
+        <button
+          onClick={handlePreviousPage}
+          disabled={page === 1}
+          className="px-4 py-2 bg-gray-300 text-gray-700 rounded-md disabled:opacity-50"
+        >
+          Previous
+        </button>
+        <span>
+          Count: {Math.min(page * limit, totalTransactions)} of{" "}
+          {totalTransactions}
+        </span>
+        <button
+          onClick={handleNextPage}
+          disabled={page === Math.ceil(totalTransactions / limit)}
+          className="px-4 py-2 bg-gray-300 text-gray-700 rounded-md disabled:opacity-50"
+        >
+          Next
+        </button>
       </div>
     </div>
   );

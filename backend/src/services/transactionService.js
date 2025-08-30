@@ -10,13 +10,20 @@ export const createTransaction = async (data, userId) => {
   //  console.log(transaction + "hello" + userId);
   return transaction;
 };
-export const getTransactionsByUser = async (userId) => {
+
+export const getTransactionsByUser = async (userId, page = 1, limit = 10) => {
   const transactions = await prisma.transaction.findMany({
     where: { userId },
     orderBy: { createdAt: "desc" },
+    skip: (page - 1) * limit,
+    take: limit,
   });
-  return transactions;
+
+  const total = await prisma.transaction.count({ where: { userId } });
+
+  return { transactions, total };
 };
+
 export const getTransactionById = async (id, userId) => {
   const transaction = await prisma.transaction.findUnique({
     where: { id },
