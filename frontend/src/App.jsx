@@ -4,6 +4,9 @@ import LoginPage from "./pages/LoginPage";
 import RegisterPage from "./pages/RegisterPage";
 import DashboardPage from "./pages/DashboardPage";
 import ProtectedRoute from "./components/ProtectedRoute";
+import Layout from "./components/Layout";
+import AllTransactionsPage from "./Pages/AllTransactionsPage";
+import AddTransactionPage from "./Pages/AddTransactionPage";
 
 function App() {
   return (
@@ -12,10 +15,19 @@ function App() {
       <Route path="/register" element={<RegisterPage />} />
 
       <Route
-        path="/"
+        path="/*"
         element={
           <ProtectedRoute>
-            <DashboardPage />
+            <Layout>
+              <Routes>
+                <Route path="/" element={<DashboardPage />} />
+                <Route path="/transactions" element={<AllTransactionsPage />} />
+                <Route
+                  path="/add-transaction"
+                  element={<AddTransactionPage />}
+                />
+              </Routes>
+            </Layout>
           </ProtectedRoute>
         }
       />

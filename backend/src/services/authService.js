@@ -24,14 +24,14 @@ export const loginUser = async (userData) => {
 
   const user = await prisma.user.findUnique({ where: { email } });
 
-  console.log(user);
+  // console.log(user);
 
   if (!user) {
     throw new Error("Invalid credentials");
   }
 
   let matched = await bcrypt.compare(password, user.password);
-  console.log(matched);
+  // console.log(matched);
   if (!matched) {
     throw new Error("Invalid credentials");
   }
@@ -41,7 +41,7 @@ export const loginUser = async (userData) => {
     process.env.JWT_SECRET || "yoursecret",
     { expiresIn: "1h" }
   );
-  console.log(token);
+  // console.log(token);
 
   delete user.password;
   return { user, token };

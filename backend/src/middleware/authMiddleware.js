@@ -2,7 +2,10 @@ import jwt from "jsonwebtoken";
 import { prisma } from "../config/db.js";
 
 export const authMiddleware = async (req, res, next) => {
-  console.log("Auth middleware invoked for request:", req.headers);
+  // console.log(
+  //   "Auth middleware invoked for request:",
+  //   req.headers.authorization
+  // );
   if (
     req.headers.authorization &&
     req.headers.authorization.startsWith("Bearer")
