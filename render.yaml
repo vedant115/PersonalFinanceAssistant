@@ -3,7 +3,6 @@ services:
     name: finance-app-backend
     env: node
     region: oregon
-    plan: free
     buildCommand: |
       cd backend
       npm install
@@ -32,7 +31,6 @@ services:
   - type: web
     name: finance-app-frontend
     env: static
-    plan: free
     buildCommand: |
       cd frontend
       npm install
