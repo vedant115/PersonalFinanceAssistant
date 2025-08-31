@@ -17,3 +17,11 @@ export const login = async (req, res) => {
     res.status(400).send(error);
   }
 };
+
+export const getMe = async (req, res) => {
+  try {
+    res.status(200).send(req.user);
+  } catch (error) {
+    res.status(400).send(error);
+  }
+};

@@ -1,4 +1,4 @@
-import React, { createContext, useContext, useState, useEffect } from "react";
+import { createContext, useContext, useState, useEffect } from "react";
 import apiService from "../services/apiService";
 
 const AuthContext = createContext();
@@ -10,6 +10,7 @@ export const useAuth = () => {
 export const AuthProvider = ({ children }) => {
   const [user, setUser] = useState(null);
   const [token, setToken] = useState(localStorage.getItem("token") || null);
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     if (token) {
@@ -18,6 +19,24 @@ export const AuthProvider = ({ children }) => {
       localStorage.removeItem("token");
     }
   }, [token]);
+
+  // Fetch user data when component mounts if token exists
+  useEffect(() => {
+    const fetchUserData = async () => {
+      if (token && !user) {
+        try {
+          const response = await apiService.get("/auth/me");
+          setUser(response.data);
+        } catch (error) {
+          console.error("Failed to fetch user data:", error);
+          setToken(null);
+        }
+      }
+      setLoading(false);
+    };
+
+    fetchUserData();
+  }, [token, user]);
 
   const login = async (userData) => {
     try {
@@ -45,7 +64,9 @@ export const AuthProvider = ({ children }) => {
   };
 
   return (
-    <AuthContext.Provider value={{ user, login, logout, token, register }}>
+    <AuthContext.Provider
+      value={{ user, login, logout, token, register, loading }}
+    >
       {children}
     </AuthContext.Provider>
   );

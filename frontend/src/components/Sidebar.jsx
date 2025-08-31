@@ -3,7 +3,7 @@ import { NavLink, useNavigate } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
 
 const Sidebar = () => {
-  const { user, logout } = useAuth();
+  const { user, logout, loading } = useAuth();
 
   const navigate = useNavigate();
   const [isExpanded, setIsExpanded] = useState(false);
@@ -71,7 +71,7 @@ const Sidebar = () => {
           }`}
         >
           <span className="text-sm whitespace-nowrap">
-            Welcome, {user?.name}
+            {loading ? "Loading..." : `Welcome, ${user?.name || "User"}`}
           </span>
         </div>
 
