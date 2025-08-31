@@ -15,8 +15,14 @@ export const registerUser = async (userData) => {
     },
   });
 
+  const token = jwt.sign(
+    { id: user.id, email: user.email },
+    process.env.JWT_SECRET || "yoursecret",
+    { expiresIn: "1h" }
+  );
+
   delete user.password;
-  return user;
+  return { user, token };
 };
 
 export const loginUser = async (userData) => {
