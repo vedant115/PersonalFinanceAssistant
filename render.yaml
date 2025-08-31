@@ -25,7 +25,7 @@ services:
       - key: MINDEE_API_KEY
         sync: false
       - key: FRONTEND_URL
-        value: https://finance-app-frontend.onrender.com
+        value: https://finance-app-frontend-52wb.onrender.com
 
   - type: web
     name: finance-app-frontend
@@ -38,4 +38,4 @@ services:
         destination: /index.html
     envVars:
       - key: VITE_API_URL
-        value: https://finance-app-backend.onrender.com
+        value: https://finance-app-backend-1664.onrender.com
