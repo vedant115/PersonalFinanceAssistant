@@ -1,6 +1,7 @@
-import React, { useState, useEffect, useMemo } from "react";
+import { useState, useEffect, useMemo } from "react";
 import apiService from "../services/apiService";
 import { useDebounce } from "../hooks/useDebounce";
+import EditTransactionForm from "./EditTransactionForm";
 
 const TransactionList = ({ searchTerm = "" }) => {
   const [transactions, setTransactions] = useState([]);
@@ -9,6 +10,7 @@ const TransactionList = ({ searchTerm = "" }) => {
   const [page, setPage] = useState(1);
   const limit = 10;
   const [totalTransactions, setTotalTransactions] = useState(0);
+  const [editingTransaction, setEditingTransaction] = useState(null);
 
   const [filters, setFilters] = useState({
     type: "",
@@ -98,7 +100,6 @@ const TransactionList = ({ searchTerm = "" }) => {
 
   const handleFilterChange = (e) => {
     const { name, value } = e.target;
-    // when switching the type, clear category so only valid categories show
     setFilters((prev) =>
       name === "type"
         ? { ...prev, type: value, category: "" }
@@ -132,6 +133,41 @@ const TransactionList = ({ searchTerm = "" }) => {
     setPage((prev) => Math.min(prev + 1, Math.ceil(totalTransactions / limit)));
   };
 
+  const handleDelete = async (id) => {
+    try {
+      await apiService.delete(`/transactions/${id}`);
+      setTransactions(transactions.filter((t) => t.id !== id));
+      setTotalTransactions((prev) => prev - 1);
+    } catch (err) {
+      setError("Failed to delete transaction");
+    }
+  };
+
+  const handleEdit = (transaction) => {
+    setEditingTransaction(transaction);
+  };
+
+  const handleUpdate = async (updatedTransaction) => {
+    try {
+      const response = await apiService.put(
+        `/transactions/${updatedTransaction.id}`,
+        updatedTransaction
+      );
+      setTransactions(
+        transactions.map((t) =>
+          t.id === updatedTransaction.id ? response.data : t
+        )
+      );
+      setEditingTransaction(null);
+    } catch (err) {
+      setError("Failed to update transaction");
+    }
+  };
+
+  const handleCancelEdit = () => {
+    setEditingTransaction(null);
+  };
+
   return (
     <div className="bg-white p-8 rounded-lg shadow-md">
       {loading && (
@@ -139,7 +175,6 @@ const TransactionList = ({ searchTerm = "" }) => {
       )}
       {error && <div className="mb-4 text-red-500">{error}</div>}
 
-      {/* Compact filters with labels - responsive layout */}
       <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-4 mb-6">
         <div>
           <label className="block text-xs font-medium text-gray-700 mb-1">
@@ -245,65 +280,93 @@ const TransactionList = ({ searchTerm = "" }) => {
               <th className="px-3 sm:px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">
                 Amount
               </th>
+              <th className="px-3 sm:px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">
+                Actions
+              </th>
             </tr>
           </thead>
           <tbody className="bg-white divide-y divide-gray-200">
             {transactions.length > 0 ? (
               transactions.map((t) => (
-                <tr key={t.id} className="hover:bg-gray-50">
-                  <td className="px-3 sm:px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                    <div className="flex flex-col">
-                      <span>{new Date(t.date).toLocaleDateString()}</span>
-                      <span className="sm:hidden text-xs text-gray-500 mt-1">
-                        {t.category} • {t.type}
+                <>
+                  <tr key={t.id} className="hover:bg-gray-50">
+                    <td className="px-3 sm:px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                      <div className="flex flex-col">
+                        <span>{new Date(t.date).toLocaleDateString()}</span>
+                        <span className="sm:hidden text-xs text-gray-500 mt-1">
+                          {t.category} • {t.type}
+                        </span>
+                      </div>
+                    </td>
+                    <td className="px-3 sm:px-6 py-4 text-sm text-gray-900">
+                      <div className="max-w-xs truncate" title={t.description}>
+                        {t.description}
+                      </div>
+                    </td>
+                    <td className="hidden sm:table-cell px-3 sm:px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                      {t.category}
+                    </td>
+                    <td className="hidden md:table-cell px-3 sm:px-6 py-4 whitespace-nowrap text-sm">
+                      <span
+                        className={`px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${
+                          t.type === "INCOME"
+                            ? "bg-green-100 text-green-800"
+                            : "bg-red-100 text-red-800"
+                        }`}
+                      >
+                        {t.type}
                       </span>
-                    </div>
-                  </td>
-                  <td className="px-3 sm:px-6 py-4 text-sm text-gray-900">
-                    <div className="max-w-xs truncate" title={t.description}>
-                      {t.description}
-                    </div>
-                  </td>
-                  <td className="hidden sm:table-cell px-3 sm:px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                    {t.category}
-                  </td>
-                  <td className="hidden md:table-cell px-3 sm:px-6 py-4 whitespace-nowrap text-sm">
-                    <span
-                      className={`px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${
-                        t.type === "INCOME"
-                          ? "bg-green-100 text-green-800"
-                          : "bg-red-100 text-red-800"
+                    </td>
+                    <td
+                      className={`px-3 sm:px-6 py-4 whitespace-nowrap text-sm text-right font-medium ${
+                        t.type === "INCOME" ? "text-green-600" : "text-red-600"
                       }`}
                     >
-                      {t.type}
-                    </span>
-                  </td>
-                  <td
-                    className={`px-3 sm:px-6 py-4 whitespace-nowrap text-sm text-right font-medium ${
-                      t.type === "INCOME" ? "text-green-600" : "text-red-600"
-                    }`}
-                  >
-                    <div className="flex flex-col items-end">
-                      <span>₹{parseFloat(t.amount).toFixed(2)}</span>
-                      <span className="md:hidden text-xs">
-                        <span
-                          className={`px-1 inline-flex text-xs leading-4 font-medium rounded ${
-                            t.type === "INCOME"
-                              ? "bg-green-100 text-green-800"
-                              : "bg-red-100 text-red-800"
-                          }`}
-                        >
-                          {t.type}
+                      <div className="flex flex-col items-end">
+                        <span>₹{parseFloat(t.amount).toFixed(2)}</span>
+                        <span className="md:hidden text-xs">
+                          <span
+                            className={`px-1 inline-flex text-xs leading-4 font-medium rounded ${
+                              t.type === "INCOME"
+                                ? "bg-green-100 text-green-800"
+                                : "bg-red-100 text-red-800"
+                            }`}
+                          >
+                            {t.type}
+                          </span>
                         </span>
-                      </span>
-                    </div>
-                  </td>
-                </tr>
+                      </div>
+                    </td>
+                    <td className="px-3 sm:px-6 py-4 whitespace-nowrap text-sm text-center">
+                      <div className="flex gap-2 justify-center">
+                        <button
+                          onClick={() => handleEdit(t)}
+                          className="px-3 py-1 bg-blue-600 text-white rounded text-xs hover:bg-blue-700"
+                        >
+                          Edit
+                        </button>
+                        <button
+                          onClick={() => handleDelete(t.id)}
+                          className="px-3 py-1 bg-red-600 text-white rounded text-xs hover:bg-red-700"
+                        >
+                          Delete
+                        </button>
+                      </div>
+                    </td>
+                  </tr>
+                  {editingTransaction && editingTransaction.id === t.id && (
+                    <EditTransactionForm
+                      transaction={editingTransaction}
+                      onUpdate={handleUpdate}
+                      onCancel={handleCancelEdit}
+                    />
+                  )}
+                </>
               ))
             ) : (
               <tr>
                 <td
-                  colSpan="5"
+                  colSpan="6"
                   className="px-3 sm:px-6 py-8 text-center text-gray-500"
                 >
                   <div className="flex flex-col items-center">

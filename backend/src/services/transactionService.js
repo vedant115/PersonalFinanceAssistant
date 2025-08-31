@@ -80,3 +80,53 @@ export const getTransactionById = async (id, userId) => {
   }
   return transaction;
 };
+
+export const updateTransaction = async (id, data, userId) => {
+  const existingTransaction = await prisma.transaction.findUnique({
+    where: { id },
+  });
+
+  if (!existingTransaction) {
+    throw new Error("Transaction not found");
+  }
+
+  if (existingTransaction.userId !== userId) {
+    throw new Error("Unauthorized");
+  }
+
+  const allowedFields = ["amount", "type", "category", "description", "date"];
+  const updateData = {};
+
+  allowedFields.forEach((field) => {
+    if (data[field] !== undefined) {
+      updateData[field] = data[field];
+    }
+  });
+
+  const transaction = await prisma.transaction.update({
+    where: { id },
+    data: updateData,
+  });
+
+  return transaction;
+};
+
+export const deleteTransaction = async (id, userId) => {
+  const existingTransaction = await prisma.transaction.findUnique({
+    where: { id },
+  });
+
+  if (!existingTransaction) {
+    throw new Error("Transaction not found");
+  }
+
+  if (existingTransaction.userId !== userId) {
+    throw new Error("Unauthorized");
+  }
+
+  await prisma.transaction.delete({
+    where: { id },
+  });
+
+  return true;
+};

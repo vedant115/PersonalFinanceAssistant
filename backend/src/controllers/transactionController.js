@@ -38,3 +38,27 @@ export const getById = async (req, res) => {
     res.status(500).send(error);
   }
 };
+
+export const update = async (req, res) => {
+  try {
+    // console.log("Update request body:", req.body);
+    const transaction = await transactionService.updateTransaction(
+      req.params.id,
+      req.body,
+      req.user.id
+    );
+    res.status(200).send(transaction);
+  } catch (error) {
+    console.error("Update error:", error);
+    res.status(500).send({ error: error.message });
+  }
+};
+
+export const deleteTransaction = async (req, res) => {
+  try {
+    await transactionService.deleteTransaction(req.params.id, req.user.id);
+    res.status(200).send({ message: "Transaction deleted successfully" });
+  } catch (error) {
+    res.status(500).send(error);
+  }
+};
