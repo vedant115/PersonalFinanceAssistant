@@ -212,10 +212,7 @@ const ReceiptUpload = ({ onReceiptProcessed, onError }) => {
       )}
 
       <div className="mt-3 text-xs text-gray-500 text-center">
-        <p>Supported formats: JPEG, PNG, WebP, PDF • Max size: 10MB</p>
-        <p>
-          For best results: Use clear, well-lit photos with all text visible
-        </p>
+        <p>Supported formats: JPEG, PNG, PDF • Max size: 10MB</p>
       </div>
 
       {showCamera && (

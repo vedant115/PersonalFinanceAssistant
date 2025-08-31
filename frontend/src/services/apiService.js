@@ -1,7 +1,12 @@
 import axios from "axios";
 
+const API_BASE_URL = import.meta.env.API_URL || "http://localhost:3000/api";
+
 const apiService = axios.create({
-  baseURL: "http://localhost:3000/api",
+  baseURL: API_BASE_URL,
+  headers: {
+    "Content-Type": "application/json",
+  },
 });
 
 apiService.interceptors.request.use(
@@ -10,7 +15,7 @@ apiService.interceptors.request.use(
     if (token) {
       config.headers.Authorization = `Bearer ${token}`;
     }
-    console.log(config.headers.Authorization);
+    // console.log(config.headers.Authorization);
     return config;
   },
   (error) => {
