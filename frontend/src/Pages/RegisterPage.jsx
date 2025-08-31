@@ -11,7 +11,7 @@ const RegisterPage = () => {
 
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
-  const { register, login } = useAuth();
+  const { register } = useAuth();
   const navigate = useNavigate();
 
   const handleChange = (e) => {
@@ -23,16 +23,10 @@ const RegisterPage = () => {
     setError("");
     setLoading(true);
     try {
-      let registerUser = await register(formData);
-      if (!registerUser) {
-        setError("Failed to register.");
-        setLoading(false);
-        return;
-      }
-      await login({ email: formData.email, password: formData.password });
+      await register(formData);
       navigate("/");
     } catch (err) {
-      setError("Failed to register.");
+      setError(err.message || "Failed to register. Please try again.");
       console.error(err);
     } finally {
       setLoading(false);
