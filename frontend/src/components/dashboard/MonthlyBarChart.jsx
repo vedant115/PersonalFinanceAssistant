@@ -20,7 +20,6 @@ ChartJS.register(
 );
 
 const MonthlyBarChart = ({ data }) => {
-  // Process the raw data from the backend
   const monthlyData = {};
   data.forEach((item) => {
     const month = new Date(item.month).toLocaleString("default", {
@@ -43,20 +42,26 @@ const MonthlyBarChart = ({ data }) => {
       {
         label: "Income",
         data: incomeValues,
-        backgroundColor: "rgba(75, 192, 192, 0.8)",
-        borderRadius: 4,
-        maxBarThickness: 48,
-        barPercentage: 0.6,
-        categoryPercentage: 0.6,
+        backgroundColor: "#10b981",
+        borderColor: "#059669",
+        borderWidth: 1,
+        borderRadius: 6,
+        borderSkipped: false,
+        maxBarThickness: 40,
+        barPercentage: 0.7,
+        categoryPercentage: 0.8,
       },
       {
         label: "Expenses",
         data: expenseValues,
-        backgroundColor: "rgba(255, 99, 132, 0.85)",
-        borderRadius: 4,
-        maxBarThickness: 48,
-        barPercentage: 0.6,
-        categoryPercentage: 0.6,
+        backgroundColor: "#ef4444",
+        borderColor: "#dc2626",
+        borderWidth: 1,
+        borderRadius: 6,
+        borderSkipped: false,
+        maxBarThickness: 40,
+        barPercentage: 0.7,
+        categoryPercentage: 0.8,
       },
     ],
   };
@@ -65,33 +70,81 @@ const MonthlyBarChart = ({ data }) => {
     responsive: true,
     maintainAspectRatio: false,
     plugins: {
-      legend: { position: "top" },
-      title: { display: true, text: "Monthly Income vs. Expenses" },
+      legend: {
+        position: "bottom",
+        labels: {
+          padding: 20,
+          usePointStyle: true,
+          font: {
+            size: 12,
+          },
+        },
+      },
+      title: {
+        display: false,
+      },
+      tooltip: {
+        backgroundColor: "rgba(0, 0, 0, 0.8)",
+        titleColor: "white",
+        bodyColor: "white",
+        borderColor: "rgba(255, 255, 255, 0.1)",
+        borderWidth: 1,
+        callbacks: {
+          label: function (context) {
+            const label = context.dataset.label || "";
+            const value = context.parsed.y;
+            return `${label}: ₹${value.toLocaleString()}`;
+          },
+        },
+      },
     },
     interaction: {
       mode: "index",
       intersect: false,
     },
     layout: {
-      padding: { top: 12, right: 12, bottom: 6, left: 6 },
+      padding: { top: 10, right: 15, bottom: 10, left: 15 },
     },
     scales: {
       x: {
-        grid: { display: false },
-        ticks: { maxRotation: 0, autoSkip: true, maxTicksLimit: 12 },
+        grid: {
+          display: false,
+        },
+        ticks: {
+          maxRotation: 45,
+          autoSkip: true,
+          maxTicksLimit: 8,
+          font: {
+            size: 11,
+          },
+        },
+        border: {
+          display: false,
+        },
       },
       y: {
         beginAtZero: true,
         ticks: {
           callback: function (value) {
-            // format as currency with thousand separators
-            if (Math.abs(value) >= 1000) {
-              return "₹" + value.toLocaleString();
+            if (Math.abs(value) >= 100000) {
+              return "₹" + (value / 100000).toFixed(1) + "L";
+            } else if (Math.abs(value) >= 1000) {
+              return "₹" + (value / 1000).toFixed(1) + "K";
             }
             return "₹" + value;
           },
+          font: {
+            size: 11,
+          },
+          maxTicksLimit: 6,
         },
-        grid: { color: "rgba(0,0,0,0.06)" },
+        grid: {
+          color: "rgba(0,0,0,0.05)",
+          drawBorder: false,
+        },
+        border: {
+          display: false,
+        },
       },
     },
   };
@@ -99,14 +152,19 @@ const MonthlyBarChart = ({ data }) => {
   return (
     <div
       className="bg-white p-6 rounded-lg shadow-md"
-      style={{ minHeight: 360 }}
+      style={{ minHeight: 400 }}
     >
+      <h3 className="text-lg font-semibold mb-6 text-center">
+        Monthly Income vs Expenses
+      </h3>
       {labels.length === 0 ? (
-        <div className="h-full flex items-center justify-center text-gray-500">
-          No data available to render the chart.
+        <div className="flex items-center justify-center h-64">
+          <p className="text-center text-gray-500">
+            No data available to render the chart.
+          </p>
         </div>
       ) : (
-        <div style={{ height: 320 }}>
+        <div style={{ height: 280 }}>
           <Bar options={options} data={chartData} />
         </div>
       )}
