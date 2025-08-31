@@ -9,13 +9,12 @@ const TransactionForm = () => {
     type: "EXPENSE",
     category: "MISC",
     description: "",
-    date: new Date().toISOString().split("T")[0], // Defaults to today
+    date: new Date().toISOString().split("T")[0],
   });
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
 
-  // Categories from your Prisma Schema
-  const categories = [
+  const expenseCategories = [
     "RENT",
     "SHOPPING",
     "FOOD",
@@ -25,10 +24,27 @@ const TransactionForm = () => {
     "TRAVEL",
     "MISC",
   ];
+  const incomeCategories = [
+    "SALARY",
+    "FREELANCE",
+    "INVESTMENT",
+    "BONUS",
+    "GIFT",
+    "OTHER_INCOME",
+  ];
+
+  const availableCategories =
+    formData.type === "INCOME" ? incomeCategories : expenseCategories;
 
   const handleChange = (e) => {
     const { name, value } = e.target;
-    setFormData((prev) => ({ ...prev, [name]: value }));
+    setFormData((prev) => {
+      const newState = { ...prev, [name]: value };
+      if (name === "type") {
+        newState.category = availableCategories[0];
+      }
+      return newState;
+    });
   };
 
   const handleSubmit = async (e) => {
@@ -88,28 +104,26 @@ const TransactionForm = () => {
             <option value="INCOME">Income</option>
           </select>
         </div>
-        {formData.type == "EXPENSE" && (
-          <div>
-            <label
-              htmlFor="category"
-              className="block text-sm font-medium text-gray-700"
-            >
-              Category
-            </label>
-            <select
-              name="category"
-              value={formData.category}
-              onChange={handleChange}
-              className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500"
-            >
-              {categories.map((cat) => (
-                <option key={cat} value={cat}>
-                  {cat}
-                </option>
-              ))}
-            </select>
-          </div>
-        )}
+        <div>
+          <label
+            htmlFor="category"
+            className="block text-sm font-medium text-gray-700"
+          >
+            Category
+          </label>
+          <select
+            name="category"
+            value={formData.category}
+            onChange={handleChange}
+            className="mt-1 block w-full px-3 py-2 border border-gray-300 bg-white rounded-md shadow-sm"
+          >
+            {availableCategories.map((cat) => (
+              <option key={cat} value={cat}>
+                {cat}
+              </option>
+            ))}
+          </select>
+        </div>
         <div>
           <label
             htmlFor="description"

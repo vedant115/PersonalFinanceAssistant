@@ -38,9 +38,11 @@ const Sidebar = () => {
         </NavLink>
         <NavLink
           to="/add-transaction"
-          className="w-full flex items-center px-4 py-2 rounded-lg bg-indigo-600 hover:bg-indigo-500 transition-colors"
+          style={({ isActive }) => (isActive ? activeLinkStyle : undefined)}
+          className="w-full flex items-center px-4 py-2 rounded-lg 
+           hover:bg-gray-700 transition-colors"
         >
-          + Add Transaction
+          Add Transaction
         </NavLink>
       </nav>
       <div className="p-4 border-t border-gray-700">
