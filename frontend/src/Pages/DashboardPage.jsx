@@ -3,17 +3,28 @@ import apiService from "../services/apiService";
 import KpiCard from "../components/dashboard/KpiCard";
 import CategoryDoughnutChart from "../components/dashboard/CategoryDoughnutChart";
 import MonthlyBarChart from "../components/dashboard/MonthlyBarChart";
+import RecentTransactions from "../components/dashboard/RecentTransactions";
 
 const DashboardPage = () => {
   const [dashboardData, setDashboardData] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
+  const [selectedDuration, setSelectedDuration] = useState("all");
+
+  const durationOptions = [
+    { value: "all", label: "All Time" },
+    { value: "1month", label: "1 Month" },
+    { value: "3months", label: "3 Months" },
+    { value: "6months", label: "6 Months" },
+  ];
 
   useEffect(() => {
     const fetchDashboardData = async () => {
       try {
         setLoading(true);
-        const response = await apiService.get("/dashboard");
+        const params =
+          selectedDuration !== "all" ? `?duration=${selectedDuration}` : "";
+        const response = await apiService.get(`/dashboard${params}`);
         setDashboardData(response.data);
       } catch (err) {
         setError("Failed to fetch dashboard data.");
@@ -23,21 +34,45 @@ const DashboardPage = () => {
       }
     };
     fetchDashboardData();
-  }, []); // Runs once on component mount
+  }, [selectedDuration]);
+
+  const handleDurationChange = (duration) => {
+    setSelectedDuration(duration);
+  };
 
   if (loading)
     return <div className="text-center p-10">Loading dashboard...</div>;
   if (error) return <p className="text-red-500 text-center p-10">{error}</p>;
-  if (!dashboardData) return null; // Or some other placeholder
+  if (!dashboardData) return null;
 
-  const { kpiData, categoryBreakdown, monthlyTrend } = dashboardData;
+  const { kpiData, categoryBreakdown, monthlyTrend, recentTransactions } =
+    dashboardData;
 
   return (
-    <div>
-      <h1 className="text-3xl font-bold mb-6">Your Financial Overview</h1>
+    <div className="space-y-6">
+      <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-4">
+        <h1 className="text-2xl sm:text-3xl font-bold">
+          Your Financial Overview
+        </h1>
 
-      {/* KPI Cards */}
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
+        <div className="flex flex-wrap gap-2">
+          {durationOptions.map((option) => (
+            <button
+              key={option.value}
+              onClick={() => handleDurationChange(option.value)}
+              className={`px-3 py-2 text-sm font-medium rounded-lg transition-colors ${
+                selectedDuration === option.value
+                  ? "bg-blue-600 text-white"
+                  : "bg-gray-200 text-gray-700 hover:bg-gray-300"
+              }`}
+            >
+              {option.label}
+            </button>
+          ))}
+        </div>
+      </div>
+
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6">
         <KpiCard
           title="Total Income"
           value={kpiData.income}
@@ -55,8 +90,7 @@ const DashboardPage = () => {
         />
       </div>
 
-      {/* Charts Grid */}
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         {categoryBreakdown && categoryBreakdown.length > 0 ? (
           <CategoryDoughnutChart data={categoryBreakdown} />
         ) : (
@@ -72,6 +106,10 @@ const DashboardPage = () => {
             <p className="text-gray-500">No monthly trend data available.</p>
           </div>
         )}
+      </div>
+
+      <div className="w-full">
+        <RecentTransactions transactions={recentTransactions} />
       </div>
     </div>
   );
