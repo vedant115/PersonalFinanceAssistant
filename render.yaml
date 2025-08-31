@@ -23,13 +23,11 @@ services:
       - key: MINDEE_API_KEY
         sync: false
       - key: FRONTEND_URL
-        fromService:
-          type: static
-          name: finance-app-frontend
-          property: host
+        value: https://finance-app-frontend.onrender.com
 
-  - type: static
+  - type: web
     name: finance-app-frontend
+    env: static
     buildCommand: |
       cd frontend
       npm install
@@ -37,10 +35,7 @@ services:
     staticPublishPath: ./frontend/dist
     envVars:
       - key: VITE_API_URL
-        fromService:
-          type: web
-          name: finance-app-backend
-          property: host
+        value: https://finance-app-backend.onrender.com
 
 databases:
   - name: finance-app-db
