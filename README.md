@@ -42,6 +42,12 @@ _Receipt Upload_
 _Transaction Management_
 ![Transactions](screenshots/transactions.png)
 
+## 🚀 Live Demo
+
+**Live Application:** https://finance-app-frontend-52wb.onrender.com
+
+**Video:** https://github.com/vedant115/PersonalFinanceAssistant/tree/main/screenshots/Demo_Video.mp4
+
 ## 🏃‍♂️ Quick Start
 
 ### Prerequisites
