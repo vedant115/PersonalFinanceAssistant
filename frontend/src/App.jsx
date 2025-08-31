@@ -5,8 +5,8 @@ import RegisterPage from "./pages/RegisterPage";
 import DashboardPage from "./pages/DashboardPage";
 import ProtectedRoute from "./components/ProtectedRoute";
 import Layout from "./components/Layout";
-import AllTransactionsPage from "./Pages/AllTransactionsPage";
-import AddTransactionPage from "./Pages/AddTransactionPage";
+import AllTransactionsPage from "./pages/AllTransactionsPage";
+import AddTransactionPage from "./pages/AddTransactionPage";
 
 function App() {
   return (
