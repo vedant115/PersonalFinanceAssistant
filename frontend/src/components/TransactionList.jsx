@@ -22,7 +22,7 @@ const TransactionList = () => {
 
   const debouncedSearchTerm = useDebounce(filters.search, 500);
 
-  const categories = useMemo(
+  const expenseCategories = useMemo(
     () => [
       "RENT",
       "SHOPPING",
@@ -32,6 +32,12 @@ const TransactionList = () => {
       "GROCERIES",
       "TRAVEL",
       "MISC",
+    ],
+    []
+  );
+
+  const incomeCategories = useMemo(
+    () => [
       "SALARY",
       "FREELANCE",
       "INVESTMENT",
@@ -41,6 +47,12 @@ const TransactionList = () => {
     ],
     []
   );
+
+  const activeCategories = useMemo(() => {
+    if (filters.type === "INCOME") return incomeCategories;
+    if (filters.type === "EXPENSE") return expenseCategories;
+    return [...expenseCategories, ...incomeCategories];
+  }, [filters.type, expenseCategories, incomeCategories]);
 
   useEffect(() => {
     const fetchTransactions = async () => {
@@ -87,13 +99,27 @@ const TransactionList = () => {
 
   const handleFilterChange = (e) => {
     const { name, value } = e.target;
-    setFilters((prev) => ({ ...prev, [name]: value }));
+    // when switching the type, clear category so only valid categories show
+    setFilters((prev) =>
+      name === "type" ? { ...prev, type: value, category: "" } : { ...prev, [name]: value }
+    );
     setPage(1);
   };
 
   const handleSortChange = (e) => {
     const [sortBy, sortOrder] = e.target.value.split("_");
     setSort({ sortBy, sortOrder });
+    setPage(1);
+  };
+
+  const handleResetFilters = () => {
+    setFilters({
+      search: "",
+      type: "",
+      category: "",
+      startDate: "",
+      endDate: "",
+    });
     setPage(1);
   };
 
@@ -152,7 +178,7 @@ const TransactionList = () => {
           className="p-2 border rounded-md"
         >
           <option value="">All Categories</option>
-          {categories.map((cat) => (
+          {activeCategories.map((cat) => (
             <option key={cat} value={cat}>
               {cat}
             </option>
@@ -161,6 +187,13 @@ const TransactionList = () => {
       </div>
 
       <div className="flex justify-end mb-4">
+        <button
+          onClick={handleResetFilters}
+          className="mr-2 px-3 py-2 bg-gray-200 text-gray-800 rounded-md hover:bg-gray-300"
+          type="button"
+        >
+          Reset Filters
+        </button>
         <select
           onChange={handleSortChange}
           value={`${sort.sortBy}_${sort.sortOrder}`}
@@ -222,7 +255,7 @@ const TransactionList = () => {
                       t.type === "INCOME" ? "text-green-600" : "text-red-600"
                     }`}
                   >
-                    ${parseFloat(t.amount).toFixed(2)}
+                    ₹{parseFloat(t.amount).toFixed(2)}
                   </td>
                 </tr>
               ))
