@@ -1,12 +1,12 @@
 import React from "react";
 import { Routes, Route } from "react-router-dom";
-import LoginPage from "./pages/LoginPage";
-import RegisterPage from "./pages/RegisterPage";
-import DashboardPage from "./pages/DashboardPage";
+import LoginPage from "./Pages/LoginPage";
+import RegisterPage from "./Pages/RegisterPage";
+import DashboardPage from "./Pages/DashboardPage";
 import ProtectedRoute from "./components/ProtectedRoute";
 import Layout from "./components/Layout";
-import AllTransactionsPage from "./pages/AllTransactionsPage";
-import AddTransactionPage from "./pages/AddTransactionPage";
+import AllTransactionsPage from "./Pages/AllTransactionsPage";
+import AddTransactionPage from "./Pages/AddTransactionPage";
 
 function App() {
   return (
