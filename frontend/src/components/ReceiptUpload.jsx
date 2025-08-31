@@ -25,9 +25,13 @@ const ReceiptUpload = ({ onReceiptProcessed, onError }) => {
         const formData = new FormData();
         formData.append("receipt", file);
 
+        console.log("Uploading file:", file.name, file.type, file.size);
         const response = await apiService.post("/receipts/upload", formData);
+        console.log("Upload response:", response.data);
         onReceiptProcessed(response.data);
       } catch (error) {
+        console.error("Upload error:", error);
+        console.error("Error response:", error.response?.data);
         onError("Failed to process receipt");
       } finally {
         setIsProcessing(false);
