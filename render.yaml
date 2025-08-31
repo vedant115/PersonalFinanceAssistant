@@ -24,20 +24,19 @@ services:
         sync: false
       - key: FRONTEND_URL
         fromService:
-          type: web
+          type: static
           name: finance-app-frontend
           property: host
 
-  - type: web
+  - type: static
     name: finance-app-frontend
-    env: static
     buildCommand: |
       cd frontend
       npm install
       npm run build
     staticPublishPath: ./frontend/dist
     envVars:
-      - key: API_URL
+      - key: VITE_API_URL
         fromService:
           type: web
           name: finance-app-backend
@@ -47,5 +46,3 @@ databases:
   - name: finance-app-db
     databaseName: finance_app
     user: finance_user
-    region: oregon
-    plan: free
