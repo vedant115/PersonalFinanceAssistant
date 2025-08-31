@@ -32,7 +32,6 @@ services:
   - type: web
     name: finance-app-frontend
     env: static
-    region: oregon
     plan: free
     buildCommand: |
       cd frontend
