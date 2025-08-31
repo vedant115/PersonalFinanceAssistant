@@ -1,8 +1,8 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import apiService from "../services/apiService";
 import { useNavigate } from "react-router-dom";
 
-const TransactionForm = () => {
+const TransactionForm = ({ initialData }) => {
   const navigate = useNavigate();
   const [formData, setFormData] = useState({
     amount: "",
@@ -13,6 +13,7 @@ const TransactionForm = () => {
   });
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
+  const [isFromReceipt, setIsFromReceipt] = useState(false);
 
   const expenseCategories = [
     "RENT",
@@ -36,6 +37,23 @@ const TransactionForm = () => {
   const availableCategories =
     formData.type === "INCOME" ? incomeCategories : expenseCategories;
 
+  useEffect(() => {
+    if (initialData) {
+      setIsFromReceipt(true);
+      setFormData({
+        amount: initialData.amount ? initialData.amount.toString() : "",
+        type: initialData.type || "EXPENSE",
+        category: initialData.category || "MISC",
+        description: initialData.description || "",
+        date: initialData.date
+          ? new Date(initialData.date).toISOString().split("T")[0]
+          : new Date().toISOString().split("T")[0],
+      });
+    } else {
+      setIsFromReceipt(false);
+    }
+  }, [initialData]);
+
   const handleChange = (e) => {
     const { name, value } = e.target;
     setFormData((prev) => {
@@ -55,10 +73,10 @@ const TransactionForm = () => {
     try {
       await apiService.post("/transactions", {
         ...formData,
-        amount: parseFloat(formData.amount), // Ensure amount is a number
-        date: new Date(formData.date).toISOString(), // Ensure date is in ISO format
+        amount: parseFloat(formData.amount),
+        date: new Date(formData.date).toISOString(),
       });
-      navigate("/transactions"); // Redirect to all transactions page on success
+      navigate("/transactions");
     } catch (err) {
       setError("Failed to add transaction. Please check your input.");
       console.error(err);
@@ -69,6 +87,27 @@ const TransactionForm = () => {
 
   return (
     <div className="bg-white p-8 rounded-lg shadow-md max-w-lg mx-auto">
+      {isFromReceipt && (
+        <div className="mb-6 p-3 bg-blue-100 border border-blue-400 text-blue-700 rounded-lg">
+          <div className="flex items-center">
+            <svg
+              className="w-5 h-5 mr-2"
+              fill="currentColor"
+              viewBox="0 0 20 20"
+            >
+              <path
+                fillRule="evenodd"
+                d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z"
+                clipRule="evenodd"
+              />
+            </svg>
+            <span className="text-sm">
+              Form populated from receipt data. Please review and edit as
+              needed.
+            </span>
+          </div>
+        </div>
+      )}
       <form onSubmit={handleSubmit} className="space-y-6">
         {error && <p className="text-red-500 text-center">{error}</p>}
         <div>
